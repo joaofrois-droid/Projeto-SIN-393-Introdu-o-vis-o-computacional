@@ -37,6 +37,8 @@ O trabalho investiga duas questões experimentais:
 **Chest X-Ray Images (Pneumonia)**, disponível no Kaggle:
 <https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia>
 
+O dataset foi apresentado na primeira etapa da disciplina e aprovado pelo professor para a realização do trabalho.
+
 São 5.856 radiografias de tórax (incidência anteroposterior) de crianças de 1 a 5 anos, publicadas por Kermany et al. (2018). A classe **pneumonia** reúne casos bacterianos e virais, que neste trabalho são tratados como uma única classe. As imagens têm tamanhos variados, por isso todas são redimensionadas antes de entrar na rede.
 
 | Pasta original | Normal | Pneumonia | Total | Uso neste projeto |
@@ -205,8 +207,8 @@ Tempo aproximado de uma execução completa (dois modelos, 25 épocas cada) numa
 ### Opção 2 – Execução local
 
 ```bash
-git clone <URL-DESTE-REPOSITORIO>
-cd <PASTA-DO-REPOSITORIO>
+git clone https://github.com/joaofrois-droid/Projeto-SIN-393-Introdu-o-vis-o-computacional.git
+cd Projeto-SIN-393-Introdu-o-vis-o-computacional
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
