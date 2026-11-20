@@ -3,7 +3,9 @@
 Projeto final da disciplina **SIN 393 – Introdução à Visão Computacional (2026)**
 Universidade Federal de Viçosa – Campus Rio Paranaíba · Prof. João Fernando Mari
 
-**Integrantes:** `NOME 1` · `NOME 2` · `NOME 3`
+**Integrantes:** `João Vitor de Freitas Frois - 9881` · `Cainá de Almeida Lopes - 9892 `
+
+📄 **Artigo (formato IEEE):** [`Relatorio.pdf`](Relatorio.pdf)
 
 🎥 **Vídeo de apresentação:** [`LINK DO YOUTUBE`](https://www.youtube.com/)
 
@@ -65,7 +67,7 @@ Os **pacientes** são então divididos com `train_test_split` (scikit-learn), es
 | Validação | 570 | 1.007 | 264 (26,2%) | 743 (73,8%) |
 | Teste | — | 624 | 234 (37,5%) | 390 (62,5%) |
 
-Com a divisão por imagem, usada em versões anteriores do projeto, a acurácia de validação chegava a cerca de 98–99%, bem acima da do teste (cerca de 89%). Com a divisão por paciente, a validação da ResNet50 (F1 macro de 0,90) ficou praticamente igual ao teste (0,896), o que confirma o vazamento que havia antes.
+Com a divisão por imagem, usada em versões anteriores do projeto, a acurácia de validação chegava a cerca de 98–99%, bem acima da do teste (cerca de 89%). Com a divisão por paciente, a validação ficou mais realista: na ResNet50 com pesos, o F1 macro de validação (0,90) ficou praticamente igual ao do teste (0,896). Nas outras três configurações, a validação (F1 macro ≈ 0,94) ainda ficou acima do teste, o que se deve à diferença de distribuição entre os conjuntos `train` e `test` originais (veja [Limitações](#limitações)).
 
 ## Metodologia
 
@@ -136,12 +138,12 @@ Os resultados abaixo são do **conjunto de teste**. Os experimentos rodaram no G
 
 | Modelo | Pesos por classe | Acurácia | F1 macro | AUC | Recall normal | Recall pneumonia | FP | FN | Melhor época |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| ResNet50 | com | 0,902 | 0,896 | **0,955** | **0,863** | 0,926 | 32 | 29 | 15 |
-| ResNet50 | sem | **0,909** | **0,899** | 0,952 | 0,803 | 0,972 | 46 | **11** | 22 |
-| MobileNetV3 | com | 0,833 | 0,803 | 0,950 | 0,590 | **0,980** | 96 | 8 | 10 |
-| MobileNetV3 | sem | 0,849 | 0,827 | 0,954 | 0,654 | 0,967 | 81 | 13 | 22 |
+| ResNet50 | com | 0,902 | 0,896 | **0,955** | **0,863** | 0,926 | 32 | 29 | 16 |
+| ResNet50 | sem | **0,909** | **0,899** | 0,952 | 0,803 | 0,972 | 46 | **11** | 23 |
+| MobileNetV3 | com | 0,833 | 0,803 | 0,950 | 0,590 | **0,980** | 96 | 8 | 11 |
+| MobileNetV3 | sem | 0,849 | 0,827 | 0,954 | 0,654 | 0,967 | 81 | 13 | 23 |
 
-FP = normal classificado como pneumonia · FN = pneumonia classificada como normal
+FP = normal classificado como pneumonia · FN = pneumonia classificada como normal · Melhor época contada a partir de 1 (o notebook imprime as épocas a partir de 0)
 
 ### Custo computacional
 
@@ -157,7 +159,7 @@ A MobileNetV3 tem **5,6× menos parâmetros**, um arquivo **5,5× menor** e é *
 ### Principais conclusões
 
 1. **ResNet50 × MobileNetV3:** no limiar de decisão padrão (0,5), a ResNet50 foi melhor nas duas configurações (F1 macro de cerca de 0,90 contra 0,80–0,83). A MobileNetV3 errou principalmente imagens normais. Ainda assim, a **AUC das duas é praticamente igual (0,950–0,955)**: a MobileNetV3 ordena as imagens tão bem quanto a ResNet50, mas suas probabilidades ficaram deslocadas para "pneumonia" no conjunto de teste. Na validação, ela teve F1 macro de 0,94, então o problema aparece na mudança de distribuição entre os conjuntos de treino e de teste do dataset.
-2. **Desbalanceamento:** os pesos por classe **não melhoraram** o F1 macro nem a AUC. Eles mudaram o **tipo de erro**: na ResNet50, reduziram os falsos positivos (de 46 para 32), mas aumentaram os falsos negativos (de 11 para 29). Em triagem médica, deixar passar uma pneumonia costuma ser mais grave que um alarme falso. Por esse critério, a **ResNet50 sem pesos** (recall de pneumonia de 0,972) foi a melhor configuração.
+2. **Desbalanceamento:** os pesos por classe **não melhoraram** o desempenho de forma consistente: o F1 macro e a AUC variaram pouco na ResNet50 e pioraram na MobileNetV3. Eles mudaram o **tipo de erro**: na ResNet50, reduziram os falsos positivos (de 46 para 32), mas aumentaram os falsos negativos (de 11 para 29). Em triagem médica, deixar passar uma pneumonia costuma ser mais grave que um alarme falso. Por esse critério, a **ResNet50 sem pesos** (recall de pneumonia de 0,972) foi a melhor configuração.
 3. **Análise qualitativa:** os falsos positivos com alta confiança se repetem nas quatro execuções e se concentram nas imagens normais com prefixo `NORMAL2-IM-*`. A ResNet50 erra 17–24% delas, contra 6–10% das imagens `IM-*`. Isso sugere diferenças de aquisição entre os lotes de imagens, ou rótulos questionáveis. Outros erros envolvem imagens com pouco contraste, mal posicionadas ou com marcações sobre o tórax.
 
 ## Estrutura do repositório
@@ -165,6 +167,7 @@ A MobileNetV3 tem **5,6× menos parâmetros**, um arquivo **5,5× menor** e é *
 ```
 .
 ├── README.md
+├── Relatorio.pdf              # artigo no formato IEEE
 ├── requirements.txt
 ├── TrabalhoVisaoTrue.ipynb    # execução COM pesos por classe (USE_CLASS_WEIGHTS = True), com saídas
 └── TrabalhoVisaoFalse.ipynb   # execução SEM pesos por classe (USE_CLASS_WEIGHTS = False), com saídas
