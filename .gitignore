@@ -1,0 +1,13 @@
+# Dataset (baixar do Kaggle)
+chest_xray/
+
+# Resultados e modelos gerados na execução local
+resultados/
+*.pth
+
+# Ambiente e arquivos temporários
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+__MACOSX/
