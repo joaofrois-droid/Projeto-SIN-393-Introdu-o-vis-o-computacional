@@ -187,23 +187,32 @@ O dataset **não** faz parte do repositório: ele deve ser baixado do Kaggle (ve
 
 Tempo aproximado de uma execução completa (dois modelos, 25 épocas cada) numa GPU T4: **cerca de 85 minutos**.
 
+### Obter o dataset
+
+1. Acesse a [página do dataset no Kaggle](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) e clique em **Download**. É preciso ter uma conta no Kaggle (gratuita).
+2. O arquivo baixado se chama `archive.zip`. Descompacte-o: o resultado ocupa cerca de 2,4 GB e tem esta estrutura:
+   ```
+   chest_xray/
+   ├── train/          ← usada (NORMAL/ e PNEUMONIA/)
+   ├── test/           ← usada (NORMAL/ e PNEUMONIA/)
+   ├── val/            ← ignorada pelo notebook
+   ├── chest_xray/     ← cópia repetida do dataset (pode ser apagada)
+   └── __MACOSX/       ← metadados do macOS (pode ser apagada)
+   ```
+   O zip traz o dataset **duplicado**. Basta a pasta `chest_xray/` de cima, com `train/` e `test/`. Apagar a cópia interna e a `__MACOSX/` economiza cerca de 1,2 GB. A pasta `val/` pode ficar: o notebook não a utiliza, porque cria a sua própria validação a partir de `train/`.
+
 ### Opção 1 – Google Colab (recomendada)
 
-1. Baixe o dataset do [Kaggle](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) e descompacte o arquivo.
-2. Envie a pasta `chest_xray` (a que contém `train/` e `test/`) para o seu Google Drive, no caminho:
+1. Na raiz do seu Google Drive (**Meu Drive**), crie uma pasta chamada `DATASET` e envie para ela a pasta `chest_xray/`:
    ```
-   My Drive/DATASET/chest_xray/
+   Meu Drive/DATASET/chest_xray/
    ├── train/
-   │   ├── NORMAL/
-   │   └── PNEUMONIA/
    └── test/
-       ├── NORMAL/
-       └── PNEUMONIA/
    ```
-   O zip do Kaggle traz o dataset duplicado (`chest_xray/chest_xray/`) e uma pasta `__MACOSX/` com metadados do macOS. Basta enviar uma das cópias; `__MACOSX/` pode ser ignorada.
-3. Abra `TrabalhoVisaoTrue.ipynb` ou `TrabalhoVisaoFalse.ipynb` no Colab.
-4. Selecione um ambiente com GPU: **Ambiente de execução → Alterar o tipo de ambiente de execução → GPU T4**.
-5. Execute todas as células (**Ambiente de execução → Executar tudo**) e autorize o acesso ao Google Drive quando for solicitado.
+   O envio tem milhares de arquivos e pode levar bastante tempo. No código, a raiz aparece como `My Drive`, mas é a mesma pasta "Meu Drive" da interface em português.
+2. Abra `TrabalhoVisaoTrue.ipynb` ou `TrabalhoVisaoFalse.ipynb` no Colab.
+3. Selecione um ambiente com GPU: **Ambiente de execução → Alterar o tipo de ambiente de execução → GPU T4**.
+4. Execute todas as células (**Ambiente de execução → Executar tudo**) e autorize o acesso ao Google Drive quando for solicitado.
    - O notebook copia o dataset do Drive para o disco do Colab, o que torna a leitura das imagens bem mais rápida.
    - Os resultados são salvos em `My Drive/exp-18-CE-pesos/` ou `My Drive/exp-18-CE-sem-pesos/`.
 
@@ -219,7 +228,7 @@ pip install -r requirements.txt
 
 Para usar GPU NVIDIA, instale o PyTorch com suporte a CUDA seguindo as instruções de <https://pytorch.org/get-started/locally/>.
 
-Depois, baixe e descompacte o dataset de forma que a pasta `chest_xray/` fique **ao lado dos notebooks**:
+Depois, mova a pasta `chest_xray/` (veja [Obter o dataset](#obter-o-dataset)) para dentro da pasta do repositório, **ao lado dos notebooks**:
 
 ```
 .
