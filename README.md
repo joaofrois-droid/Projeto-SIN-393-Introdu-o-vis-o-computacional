@@ -67,7 +67,7 @@ Os **pacientes** são então divididos com `train_test_split` (scikit-learn), es
 | Validação | 570 | 1.007 | 264 (26,2%) | 743 (73,8%) |
 | Teste | — | 624 | 234 (37,5%) | 390 (62,5%) |
 
-Com a divisão por imagem, usada em versões anteriores do projeto, a acurácia de validação chegava a cerca de 98–99%, bem acima da do teste (cerca de 89%). Com a divisão por paciente, a validação ficou mais realista: na ResNet50 com pesos, o F1 macro de validação (0,90) ficou praticamente igual ao do teste (0,896). Nas outras três configurações, a validação (F1 macro ≈ 0,94) ainda ficou acima do teste, o que se deve à diferença de distribuição entre os conjuntos `train` e `test` originais (veja [Limitações](#limitações)).
+Com a divisão por paciente, na ResNet50 com pesos, o F1 macro de validação (0,90) ficou praticamente igual ao do teste (0,896). Nas outras três configurações, a validação (F1 macro ≈ 0,94) ainda ficou acima do teste, o que se deve à diferença de distribuição entre os conjuntos `train` e `test` originais (veja [Limitações](#limitações)).
 
 ## Metodologia
 
@@ -118,8 +118,6 @@ Todas as imagens são redimensionadas para 224×224 e normalizadas com a média 
 | Pesos por classe | `n_total / (n_classes × n_classe)`: normal = 1,954; pneumonia = 0,672 |
 | Semente | 42 (Python, NumPy, PyTorch e DataLoaders) |
 
-A configuração SGD + StepLR foi escolhida depois de experimentos preliminares com Adam e com *Cosine Annealing*.
-
 **Seleção do modelo:** a cada época, são guardados os pesos da época com **maior F1 macro na validação** (em caso de empate, a de menor perda). Esses pesos são usados no teste. O conjunto de teste não participa de nenhuma decisão de treinamento.
 
 ### Avaliação
@@ -158,9 +156,9 @@ A MobileNetV3 tem **5,6× menos parâmetros**, um arquivo **5,5× menor** e é *
 
 ### Principais conclusões
 
-1. **ResNet50 × MobileNetV3:** no limiar de decisão padrão (0,5), a ResNet50 foi melhor nas duas configurações (F1 macro de cerca de 0,90 contra 0,80–0,83). A MobileNetV3 errou principalmente imagens normais. Ainda assim, a **AUC das duas é praticamente igual (0,950–0,955)**: a MobileNetV3 ordena as imagens tão bem quanto a ResNet50, mas suas probabilidades ficaram deslocadas para "pneumonia" no conjunto de teste. Na validação, ela teve F1 macro de 0,94, então o problema aparece na mudança de distribuição entre os conjuntos de treino e de teste do dataset.
-2. **Desbalanceamento:** os pesos por classe **não melhoraram** o desempenho de forma consistente: o F1 macro e a AUC variaram pouco na ResNet50 e pioraram na MobileNetV3. Eles mudaram o **tipo de erro**: na ResNet50, reduziram os falsos positivos (de 46 para 32), mas aumentaram os falsos negativos (de 11 para 29). Em triagem médica, deixar passar uma pneumonia costuma ser mais grave que um alarme falso. Por esse critério, a **ResNet50 sem pesos** (recall de pneumonia de 0,972) foi a melhor configuração.
-3. **Análise qualitativa:** os falsos positivos com alta confiança se repetem nas quatro execuções e se concentram nas imagens normais com prefixo `NORMAL2-IM-*`. A ResNet50 erra 17–24% delas, contra 6–10% das imagens `IM-*`. Isso sugere diferenças de aquisição entre os lotes de imagens, ou rótulos questionáveis. Outros erros envolvem imagens com pouco contraste, mal posicionadas ou com marcações sobre o tórax.
+1. **ResNet50 × MobileNetV3:** nas mesmas condições de avaliação, a ResNet50 foi melhor nas duas configurações (F1 macro de cerca de 0,90 contra 0,80–0,83). A MobileNetV3 errou principalmente imagens normais. Ainda assim, a **AUC das duas é praticamente igual (0,950–0,955)**: a MobileNetV3 ordena as imagens tão bem quanto a ResNet50, mas suas probabilidades ficaram deslocadas para "pneumonia" no conjunto de teste. Na validação, ela teve F1 macro de 0,94, então o problema aparece na mudança de distribuição entre os conjuntos de treino e de teste do dataset.
+2. **Desbalanceamento:** os pesos por classe **não melhoraram** o desempenho de forma consistente: o F1 macro e a AUC variaram pouco na ResNet50 e pioraram na MobileNetV3. Eles mudaram o **tipo de erro**: na ResNet50, reduziram os falsos positivos (de 46 para 32), mas aumentaram os falsos negativos (de 11 para 29). Em triagem médica, deixar passar uma pneumonia costuma ser mais grave que um alarme falso. Por esse critério, a **ResNet50 sem pesos** teve o melhor equilíbrio: recall de pneumonia de 0,972 com o maior F1 macro (0,899). A MobileNetV3 com pesos deixou passar ainda menos pneumonias (8), mas classificou 96 radiografias normais como pneumonia.
+3. **Análise qualitativa:** na ResNet50, os falsos positivos se concentram nas imagens normais com prefixo `NORMAL2-IM-*`: ela erra 17–24% delas, contra 6–10% das imagens `IM-*`. Isso sugere diferenças de aquisição entre os lotes de imagens, ou rótulos questionáveis. Outros erros envolvem imagens com pouco contraste, mal posicionadas ou com marcações sobre o tórax.
 
 ## Estrutura do repositório
 
@@ -284,10 +282,8 @@ model.eval()
 
 ## Limitações
 
-- **Uma única execução (semente) por configuração.** Algumas diferenças entre configurações são pequenas, e a MobileNetV3 variou bastante entre execuções preliminares. O ideal seria repetir cada experimento com várias sementes e reportar média ± desvio padrão.
+- **Uma única execução (semente) por configuração.** Algumas diferenças entre configurações são pequenas e podem ser explicadas pela variação natural do treinamento. O ideal seria repetir cada experimento com várias sementes e reportar média ± desvio padrão.
 - **Mudança de distribuição entre treino e teste.** Os conjuntos `train` e `test` originais do dataset têm características diferentes, o que explica parte da queda de desempenho do teste em relação à validação.
-- **Limiar de decisão fixo (0,5).** O limiar não foi calibrado. Como as AUCs são altas, ajustá-lo na validação poderia reduzir os falsos positivos, principalmente na MobileNetV3.
-- **Identificação de pacientes pelo nome do arquivo.** A divisão por paciente depende do padrão de nomes do dataset e não pode ser confirmada por metadados clínicos.
 
 ## Referências
 
